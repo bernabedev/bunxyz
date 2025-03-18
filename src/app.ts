@@ -1,8 +1,10 @@
 import { serve, type Server } from "bun";
+import { readdir, stat } from "node:fs/promises";
+import path from "node:path";
 import { BunxyzRequest } from "./request";
 import { BunxyzResponse } from "./response";
 
-type Handler = (req: Request) => Response | Promise<Response>;
+type Handler = (req: BunxyzRequest) => BunxyzResponse | Promise<BunxyzResponse>;
 type Middleware = (
   req: BunxyzRequest,
   res: BunxyzResponse,
@@ -20,10 +22,16 @@ export class App {
   private middleware: Middleware[] = [];
   private server: Server | null = null;
   private port: number = 3000;
+  private apiDir: string = path.join(process.cwd(), "src", "api"); // Default API directory
 
-  constructor(port?: number) {
+  constructor(port?: number, apiDir?: string) {
     if (port) {
       this.port = port;
+    }
+    if (apiDir) {
+      this.apiDir = apiDir;
+    } else {
+      this.loadApiRoutes(); // Automatically load API routes on initialization
     }
   }
 
@@ -55,6 +63,43 @@ export class App {
     return this.routes.find(
       (route) => route.method === method && route.path === path
     );
+  }
+
+  private async loadApiRoutes(
+    dir: string = this.apiDir,
+    prefix: string = "/api"
+  ): Promise<void> {
+    try {
+      const entries = await readdir(dir);
+
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry);
+        const stats = await stat(fullPath);
+
+        if (stats.isDirectory()) {
+          await this.loadApiRoutes(fullPath, `${prefix}/${entry}`);
+        } else if (
+          stats.isFile() &&
+          (entry.endsWith(".ts") || entry.endsWith(".js"))
+        ) {
+          const routePath = `${prefix}/${entry.replace(
+            /\.[tj]s$/,
+            ""
+          )}`.replace(/\[(.*?)\]/g, ":$1");
+          const module = await import(fullPath);
+
+          // Assuming your API route files export handler functions for different methods
+          for (const method of ["GET", "POST", "PUT", "DELETE"]) {
+            if (module[method.toUpperCase()]) {
+              this.addRoute(method, routePath, module[method.toUpperCase()]);
+              console.log(`Loaded API route: ${method} ${routePath}`);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error loading API routes:", error);
+    }
   }
 
   async handleRequest(req: Request): Promise<Response> {
