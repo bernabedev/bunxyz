@@ -48,5 +48,8 @@
   "peerDependencies": {
     "bun-types": "latest"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
 }
