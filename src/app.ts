@@ -4,9 +4,9 @@ import path from "node:path";
 import { BunxyzRequest } from "./request";
 import { BunxyzResponse } from "./response";
 
-type Handler = (req: BunxyzRequest) => Response | Promise<Response>;
+export type Handler = (req: BunxyzRequest) => Response | Promise<Response>;
 
-type Middleware = (
+export type Middleware = (
   req: BunxyzRequest,
   next: () => Promise<Response>
 ) => Promise<Response> | Response;

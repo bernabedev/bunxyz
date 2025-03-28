@@ -1,43 +1,26 @@
-import { App } from "./app";
-import { BunxyzResponse } from "./response";
+/**
+ * Bunxyz Framework Entry Point
+ *
+ * This file exports the public API of the Bunxyz framework.
+ * Users should import necessary components directly from the package name
+ * (e.g., `import { App, BunxyzRequest } from 'bunxyz';`).
+ */
 
-const app = new App(3000);
+// --- Core Class ---
+// Export the main application class.
+export { App } from "./app";
 
-app.use(async (req, next) => {
-  const start = Date.now();
-  console.log(`--> ${req.method} ${req.url}`);
-  try {
-    // Espera a que el siguiente middleware o handler termine
-    const response = await next();
-    const duration = Date.now() - start;
-    console.log(
-      `<-- ${req.method} ${req.url} ${response.status} (${duration}ms)`
-    );
-    // Puedes modificar la respuesta aquí si es necesario antes de devolverla
-    // response.headers.set('X-Request-Time', `${duration}ms`);
-    return response;
-  } catch (error) {
-    // Manejo de errores en middleware (aunque handleRequest ya tiene un catch)
-    console.error("Middleware error:", error);
-    return BunxyzResponse.json(
-      { error: "Middleware processing error" },
-      { status: 500 }
-    );
-  }
-});
+// --- Request & Response ---
+// Export the custom request object that handlers receive.
+export { BunxyzRequest } from "./request";
+// Export the response helper class for creating responses easily.
+export { BunxyzResponse } from "./response";
 
-app.get("/", () => BunxyzResponse.text("Welcome to the homepage!"));
-app.get("/about", () => BunxyzResponse.text("This is the about page."));
-app.get("/api/data/:id", (req) => {
-  console.log({ req });
-  return BunxyzResponse.json({ message: "hello! OK is data" });
-});
-app.get("/api/data", () =>
-  BunxyzResponse.json({ message: "hello! OK is data" })
-);
-app.post("/api/data", async (req) => {
-  const body = await req.json();
-  return BunxyzResponse.json({ message: "Data received!", body });
-});
+// --- Types ---
+// Export the essential types for defining handlers and middleware.
+// Adjust the path if these types are defined elsewhere.
+export type { Handler, Middleware } from "./app";
 
-app.listen();
+// Note: Internal types or implementation details like 'RouteDefinition'
+// or utility functions used only within the framework are NOT exported here
+// to keep the public API clean and stable.
