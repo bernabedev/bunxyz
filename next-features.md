@@ -2,35 +2,35 @@
 
 **I. Mejoras en Enrutamiento y Request Handling:**
 
-1.  **Validación de Esquemas (Schema Validation):**
+1. ✅ **Validación de Esquemas (Schema Validation):**
 
-    - Integrar librerías como [Zod](https://zod.dev/) o [Valibot](https://valibot.dev/) para validar automáticamente:
-      - Parámetros de ruta (`req.params`).
-      - Query parameters (`req.query`).
-      - Cuerpo de la solicitud (`req.body`).
-    - Podrías definir esquemas en los archivos de ruta y hacer que el framework los aplique antes de llamar al handler, devolviendo errores 400 automáticamente si la validación falla.
+   - Integrar librerías como [Zod](https://zod.dev/) o [Valibot](https://valibot.dev/) para validar automáticamente:
+     - Parámetros de ruta (`req.params`).
+     - Query parameters (`req.query`).
+     - Cuerpo de la solicitud (`req.body`).
+   - Podrías definir esquemas en los archivos de ruta y hacer que el framework los aplique antes de llamar al handler, devolviendo errores 400 automáticamente si la validación falla.
 
-2.  **Parsing de Query Parameters:**
+2. ✅ **Parsing de Query Parameters:**
 
-    - Añadir un objeto `req.query` poblado automáticamente parseando la cadena de consulta de la URL (similar a `req.url.searchParams`, pero quizás con un objeto más simple).
+   - Añadir un objeto `req.query` poblado automáticamente parseando la cadena de consulta de la URL (similar a `req.url.searchParams`, pero quizás con un objeto más simple).
 
-3.  **Parsing Avanzado del Cuerpo (Body Parsing):**
+3. ✅ℹ️ **Parsing Avanzado del Cuerpo (Body Parsing):**
 
-    - Además de `req.json()`, añadir soporte incorporado (quizás como middleware opcional o métodos en `req`) para:
-      - `application/x-www-form-urlencoded` (formularios HTML normales).
-      - `multipart/form-data` (para subida de archivos y formularios).
+   - Además de `req.json()`, añadir soporte incorporado (quizás como middleware opcional o métodos en `req`) para:
+     - `application/x-www-form-urlencoded` (formularios HTML normales).
+     - `multipart/form-data` (para subida de archivos y formularios).
 
-4.  **Manejo de Subida de Archivos (File Uploads):**
+4. **Manejo de Subida de Archivos (File Uploads):**
 
-    - Integrado con el parser `multipart/form-data`, proveer una API sencilla para acceder a los archivos subidos (ej. `req.files`), gestionando el almacenamiento temporal o en memoria.
+   - Integrado con el parser `multipart/form-data`, proveer una API sencilla para acceder a los archivos subidos (ej. `req.files`), gestionando el almacenamiento temporal o en memoria.
 
-5.  **Agrupación de Rutas y Prefijos:**
+5. **Agrupación de Rutas y Prefijos:**
 
-    - Permitir agrupar rutas mediante programación (además del FS routing) para aplicar middleware o prefijos comunes a un conjunto de rutas.
-    - Ejemplo: `app.group('/admin', (adminGroup) => { adminGroup.use(authMiddleware); adminGroup.get('/users', ...); });`
+   - Permitir agrupar rutas mediante programación (además del FS routing) para aplicar middleware o prefijos comunes a un conjunto de rutas.
+   - Ejemplo: `app.group('/admin', (adminGroup) => { adminGroup.use(authMiddleware); adminGroup.get('/users', ...); });`
 
-6.  **Middleware a Nivel de Ruta/Archivo:**
-    - Permitir definir middleware específico para una ruta o un conjunto de rutas definidas en un archivo, quizás mediante una exportación especial (`export const middleware = [myMiddleware];`) en el archivo de la ruta.
+6. **Middleware a Nivel de Ruta/Archivo:**
+   - Permitir definir middleware específico para una ruta o un conjunto de rutas definidas en un archivo, quizás mediante una exportación especial (`export const middleware = [myMiddleware];`) en el archivo de la ruta.
 
 **II. Mejoras en Response Handling:**
 
