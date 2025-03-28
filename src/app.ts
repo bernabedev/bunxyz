@@ -1,6 +1,7 @@
-import { serve, type BunRequest, type Server } from "bun";
+import { serve, type Server } from "bun";
 import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
+import { ZodSchema } from "zod";
 import { BunxyzRequest } from "./request";
 import { BunxyzResponse } from "./response";
 
@@ -11,24 +12,16 @@ export type Middleware = (
   next: () => Promise<Response>
 ) => Promise<Response> | Response;
 
-type BunServeRoutes = Record<
-  string,
-  | Response
-  | ((req: BunRequest) => Response | Promise<Response>)
-  | {
-      GET?: (req: BunRequest) => Response | Promise<Response>;
-      POST?: (req: BunRequest) => Response | Promise<Response>;
-      PUT?: (req: BunRequest) => Response | Promise<Response>;
-      DELETE?: (req: BunRequest) => Response | Promise<Response>;
-    }
->;
-
 interface RouteDefinition {
   method: string;
   path: string; // Original path string (e.g., /api/users/:id)
   regex: RegExp; // Compiled regex for matching
   paramNames: string[]; // Names of parameters extracted from the path
   handler: Handler;
+  // Validation schemas (optional)
+  paramsSchema?: ZodSchema<any>;
+  querySchema?: ZodSchema<any>;
+  bodySchema?: ZodSchema<any>;
 }
 
 export class App {
@@ -83,7 +76,16 @@ export class App {
     return { regex, paramNames };
   }
 
-  private addRoute(method: string, path: string, handler: Handler): void {
+  private addRoute(
+    method: string,
+    path: string,
+    handler: Handler,
+    schemas?: {
+      paramsSchema?: ZodSchema<any>;
+      querySchema?: ZodSchema<any>;
+      bodySchema?: ZodSchema<any>;
+    }
+  ): void {
     const { regex, paramNames } = this.compilePath(path);
     this.routes.push({
       method: method.toUpperCase(),
@@ -91,6 +93,11 @@ export class App {
       regex,
       paramNames,
       handler,
+
+      // Validation schemas (optional)
+      paramsSchema: schemas?.paramsSchema,
+      querySchema: schemas?.querySchema,
+      bodySchema: schemas?.bodySchema,
     });
     console.log(`Registered route: ${method} ${path}`);
   }
@@ -145,6 +152,21 @@ export class App {
           try {
             const module = await import(fullPath);
 
+            const schemas = {
+              paramsSchema:
+                module.paramsSchema instanceof ZodSchema
+                  ? module.paramsSchema
+                  : undefined,
+              querySchema:
+                module.querySchema instanceof ZodSchema
+                  ? module.querySchema
+                  : undefined,
+              bodySchema:
+                module.bodySchema instanceof ZodSchema
+                  ? module.bodySchema
+                  : undefined,
+            };
+
             for (const method of [
               "GET",
               "POST",
@@ -155,7 +177,7 @@ export class App {
               "HEAD",
             ]) {
               if (typeof module[method] === "function") {
-                this.addRoute(method, finalPath, module[method]);
+                this.addRoute(method, finalPath, module[method], schemas);
               }
             }
           } catch (importError) {
@@ -178,6 +200,20 @@ export class App {
     const method = req.method.toUpperCase();
     const pathname = url.pathname;
 
+    const query: Record<string, string | string[]> = {};
+    for (const [key, value] of url.searchParams.entries()) {
+      if (query[key]) {
+        // If key already exists, convert to array or push
+        if (Array.isArray(query[key])) {
+          (query[key] as string[]).push(value);
+        } else {
+          query[key] = [query[key] as string, value];
+        }
+      } else {
+        query[key] = value;
+      }
+    }
+
     for (const route of this.routes) {
       if (route.method !== method) {
         continue;
@@ -190,10 +226,98 @@ export class App {
           params[name] = match[index + 1];
         });
 
-        const customReq = new BunxyzRequest(req, params);
+        let validatedParams: any = params;
+        if (route.paramsSchema) {
+          const result = route.paramsSchema.safeParse(params);
+          if (!result.success) {
+            console.warn(
+              `[Validation Error] Params validation failed for ${method} ${pathname}:`,
+              result.error.flatten()
+            );
+            return BunxyzResponse.validationError(result.error);
+          }
+          validatedParams = result.data;
+        }
 
-        let handlerToExecute: () => Promise<Response> = () =>
-          Promise.resolve(route.handler(customReq));
+        let validatedQuery: any = query;
+        if (route.querySchema) {
+          const result = route.querySchema.safeParse(query);
+          if (!result.success) {
+            console.warn(
+              `[Validation Error] Query validation failed for ${method} ${pathname}:`,
+              result.error.flatten()
+            );
+            return BunxyzResponse.validationError(result.error);
+          }
+          validatedQuery = result.data;
+        }
+
+        const customReq = new BunxyzRequest(
+          req,
+          validatedParams,
+          validatedQuery
+        );
+        customReq.validatedData = {
+          params: validatedParams,
+          query: validatedQuery,
+        };
+
+        const executeHandler = async (): Promise<Response> => {
+          let parsedBody: any = undefined;
+
+          if (route.bodySchema && !["GET", "HEAD"].includes(method)) {
+            try {
+              const contentType = req.headers
+                .get("content-type")
+                ?.split(";")[0];
+              if (contentType === "application/json") {
+                parsedBody = await req.clone().json();
+              } else {
+                console.warn(
+                  `[Validation] Body validation skipped for ${method} ${pathname}: Unsupported Content-Type '${contentType}'. Only 'application/json' is supported.`
+                );
+              }
+
+              if (parsedBody !== undefined) {
+                const result = route.bodySchema.safeParse(parsedBody);
+                if (!result.success) {
+                  console.warn(
+                    `[Validation Error] Body validation failed for ${method} ${pathname}:`,
+                    result.error.flatten()
+                  );
+                  return BunxyzResponse.validationError(result.error);
+                }
+
+                customReq.validatedData = {
+                  ...customReq.validatedData,
+                  body: result.data,
+                };
+              }
+            } catch (error: any) {
+              if (error instanceof SyntaxError) {
+                console.warn(
+                  `[Validation Error] Invalid JSON body for ${method} ${pathname}:`,
+                  error.message
+                );
+                return BunxyzResponse.json(
+                  { error: "Invalid JSON format in request body" },
+                  { status: 400 }
+                );
+              }
+
+              console.error(
+                `[Validation Error] Unexpected error during body parsing/validation for ${method} ${pathname}:`,
+                error
+              );
+              return BunxyzResponse.json(
+                { error: "Error processing request body" },
+                { status: 500 }
+              );
+            }
+          }
+
+          return Promise.resolve(route.handler(customReq));
+        };
 
         const runMiddleware = (index: number): Promise<Response> => {
           if (index < this.middleware.length) {
@@ -203,7 +327,7 @@ export class App {
               currentMiddleware(customReq, () => runMiddleware(index + 1))
             );
           } else {
-            return handlerToExecute();
+            return executeHandler();
           }
         };
 
