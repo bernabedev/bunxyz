@@ -237,10 +237,10 @@ export class App {
     // For simplicity, we assume the loading is quick or has already finished.
 
     // Print the registered routes right before starting the server
-    console.log(
-      "Registered routes:",
-      this.routes.map((r) => `${r.method} ${r.path}`)
-    );
+    // console.log(
+    //   "Registered routes:",
+    //   this.routes.map((r) => `${r.method} ${r.path}`)
+    // );
 
     this.server = serve({
       port: this.port,
