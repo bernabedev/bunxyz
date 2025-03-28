@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { BunxyzRequest } from "../../request";
 import { BunxyzResponse } from "../../response";
 
@@ -10,4 +11,18 @@ export let products = [
 
 export const GET = (req: BunxyzRequest): Response => {
   return BunxyzResponse.json(products);
+};
+
+export const bodySchema = z.object({
+  name: z.string().min(2).max(50),
+  price: z.number().nonnegative().optional().default(0),
+  tags: z.array(z.string()).optional().default([]),
+});
+
+export const POST = (req: BunxyzRequest): Response => {
+  const body = req.validatedData?.body as z.infer<typeof bodySchema>;
+  console.log({ body });
+  const newProduct = { id: Date.now().toString(), ...body };
+  products.push(newProduct);
+  return BunxyzResponse.json(newProduct);
 };
