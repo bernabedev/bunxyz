@@ -17,7 +17,8 @@
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bernabedev/bunxyz.git"
+    "url": "git+https://github.com/bernabedev/bunxyz.git",
+    "directory": "packages/bunxyz"
   },
   "bugs": {
     "url": "https://github.com/bernabedev/bunxyz/issues"

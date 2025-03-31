@@ -14,7 +14,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bernabedev/bunxyz-cli.git"
+    "url": "git+https://github.com/bernabedev/bunxyz.git",
+    "directory": "packages/bunxyz-cli"
   },
   "scripts": {
     "build": "tsc",
