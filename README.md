@@ -1,6 +1,9 @@
 # 🦊 Bunxyz Monorepo
 
-[![Build Status](https://img.shields.io/github/actions/workflow/status/YOUR_GITHUB_USERNAME/bunxyz-monorepo/ci.yml?branch=main)](https://github.com/YOUR_GITHUB_USERNAME/bunxyz-monorepo/actions)
+A minimalist, fast, file-system based routing framework for **Bun**, inspired by Express and Next.js/Remix. Leverage Bun's incredible speed with a familiar and intuitive development experience.
+
+[![Made with Bun](https://img.shields.io/badge/Made%20with-Bun-yellow.svg)](https://bun.sh)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/bernabedev/bunxyz/ci.yml?branch=main)](https://github.com/bernabedev/bunxyz/actions)
 [![NPM Version - Framework](https://img.shields.io/npm/v/bunxyz.svg)](https://www.npmjs.com/package/bunxyz) <!-- Placeholder -->
 [![NPM Version - CLI](https://img.shields.io/npm/v/@bunxyz/cli.svg)](https://www.npmjs.com/package/@bunxyz/cli) <!-- Placeholder -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- Adjust if needed -->
@@ -13,7 +16,7 @@ This is a monorepo managed using **Bun Workspaces**.
 
 The repository is organized as follows:
 
-bunxyz-monorepo/
+bunxyz/
 ├── packages/ # Contains all individual packages
 │ ├── bunxyz/ # The core Bunxyz framework library
 │ └── bunxyz-cli/ # The Bunxyz command-line interface tool
@@ -41,8 +44,8 @@ To set up the monorepo for local development:
 2.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/bernabedev/bunxyz-monorepo.git
-    cd bunxyz-monorepo
+    git clone https://github.com/bernabedev/bunxyz.git
+    cd bunxyz
     ```
 
 3.  **Install dependencies:**
