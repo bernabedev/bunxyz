@@ -1,0 +1,38 @@
+{
+  "name": "bunxyz-cli",
+  "version": "0.1.0",
+  "module": "index.ts",
+  "type": "module",
+  "license": "MIT",
+  "author": "Freilyn Bernabe <freilyn@bernabe.dev>",
+  "homepage": "https://github.com/bernabedev/bunxyz#readme",
+  "bugs": {
+    "url": "https://github.com/bernabedev/bunxyz/issues"
+  },
+  "bin": {
+    "bunxyz": "dist/bin/bunxyz.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bernabedev/bunxyz-cli.git"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun --watch ./bin/bunxyz.ts",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0"
+  },
+  "files": [
+    "dist",
+    "src/templates"
+  ]
+}
