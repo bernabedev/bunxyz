@@ -6,6 +6,26 @@
   "workspaces": [
     "packages/*"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bernabedev/bunxyz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bernabedev/bunxyz/issues"
+  },
+  "homepage": "https://github.com/bernabedev/bunxyz#readme",
+  "license": "MIT",
+  "author": "Freilyn Bernabe <freilyn@bernabe.dev>",
+  "keywords": [
+    "bun",
+    "framework",
+    "router",
+    "routing",
+    "api",
+    "web",
+    "server",
+    "filesystem"
+  ],
   "scripts": {
     "build": "bun run --filter \"*\" build",
     "build:framework": "bun run --filter \"bunxyz\" build",
