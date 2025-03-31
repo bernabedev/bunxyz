@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { BunxyzRequest } from "../../request";
-import { BunxyzResponse } from "../../response";
+import type { BunxyzRequest } from "../../../src/request";
+import { BunxyzResponse } from "../../../src/response";
 
 // Modifying this array directly only works because the server process keeps it in memory.
 export let products = [

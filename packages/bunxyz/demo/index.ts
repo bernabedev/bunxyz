@@ -1,5 +1,5 @@
-import { App } from "./app";
-import { BunxyzResponse } from "./response";
+import { App } from "../src/app";
+import { BunxyzResponse } from "../src/response";
 
 export const app = new App(3000);
 
