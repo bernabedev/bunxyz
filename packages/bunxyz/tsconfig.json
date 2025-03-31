@@ -29,7 +29,6 @@
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
   },
-  "include": ["src/**/*", "index.ts"],
-  "exclude": ["node_modules", "dist"],
-  "extends": ["../../tsconfig.base.json"]
+  "include": ["./src/**/*", "./src/index.ts"],
+  "exclude": ["node_modules", "dist"]
 }
