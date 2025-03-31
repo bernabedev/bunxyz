@@ -33,6 +33,7 @@
   },
   "files": [
     "dist",
-    "src/templates"
+    "src/templates",
+    "bin"
   ]
 }
