@@ -1,0 +1,55 @@
+{
+  "name": "bunxyz",
+  "version": "0.1.0",
+  "description": "Minimalist, fast, file-system based routing framework for Bun",
+  "author": "Freilyn Bernabe <freilyn@bernabe.dev>",
+  "license": "MIT",
+  "keywords": [
+    "bun",
+    "framework",
+    "router",
+    "routing",
+    "api",
+    "web",
+    "server",
+    "filesystem"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bernabedev/bunxyz.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bernabedev/bunxyz/issues"
+  },
+  "homepage": "https://github.com/bernabedev/bunxyz#readme",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "bun run clean && bun build ./src/index.ts --outdir ./dist --target bun",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "bun-types": "latest"
+  },
+  "type": "module",
+  "dependencies": {
+    "zod": "^3.24.2"
+  }
+}
