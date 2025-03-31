@@ -14,6 +14,7 @@
     "server",
     "filesystem"
   ],
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bernabedev/bunxyz.git"
@@ -31,15 +32,13 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "files": [
-    "dist",
-    "LICENSE",
-    "README.md"
-  ],
   "scripts": {
     "build": "bun run clean && bun build ./src/index.ts --outdir ./dist --target bun",
     "clean": "rm -rf dist",
     "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
@@ -48,8 +47,9 @@
   "peerDependencies": {
     "bun-types": "latest"
   },
-  "type": "module",
-  "dependencies": {
-    "zod": "^3.24.2"
-  }
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ]
 }
