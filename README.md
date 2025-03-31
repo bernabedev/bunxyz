@@ -1,4 +1,4 @@
-# 🦊 Bunxyz Monorepo
+# 🦊 Bunxyz
 
 A minimalist, fast, file-system based routing framework for **Bun**, inspired by Express and Next.js/Remix. Leverage Bun's incredible speed with a familiar and intuitive development experience.
 
