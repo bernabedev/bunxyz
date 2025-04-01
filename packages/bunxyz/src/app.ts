@@ -1,7 +1,8 @@
 import { serve, type Server } from "bun";
 import { readdir, stat } from "node:fs/promises";
 import path from "node:path";
-import { ZodSchema } from "zod";
+import { ZodError, ZodSchema } from "zod";
+import { RequestValidationError } from "./errors";
 import { BunxyzRequest } from "./request";
 import { BunxyzResponse } from "./response";
 
@@ -160,10 +161,6 @@ export class App {
               querySchema:
                 module.querySchema instanceof ZodSchema
                   ? module.querySchema
-                  : undefined,
-              bodySchema:
-                module.bodySchema instanceof ZodSchema
-                  ? module.bodySchema
                   : undefined,
             };
 
@@ -335,6 +332,14 @@ export class App {
           return await runMiddleware(0);
         } catch (error: any) {
           console.error(`Error handling request ${method} ${pathname}:`, error);
+          if (error instanceof RequestValidationError) {
+            console.warn(
+              `[Validation Error] Body validation failed for ${method} ${pathname}:`,
+              error.flatten()
+            );
+            // Reutiliza la respuesta de error de validación estándar
+            return BunxyzResponse.validationError(new ZodError(error.issues));
+          }
 
           return BunxyzResponse.json(
             {
