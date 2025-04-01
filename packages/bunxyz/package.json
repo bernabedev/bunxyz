@@ -1,6 +1,6 @@
 {
   "name": "bunxyz",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Minimalist, fast, file-system based routing framework for Bun",
   "author": "Freilyn Bernabe <freilyn@bernabe.dev>",
   "license": "MIT",
