@@ -9,7 +9,7 @@ COPY package.json bun.lock ./
 COPY packages/docs/package.json ./packages/docs/package.json
 
 # Install dependencies (production only for final image)
-RUN bun install --frozen-lockfile --production
+RUN bun install --production
 
 # Copy all files needed for build
 COPY packages/docs ./packages/docs
