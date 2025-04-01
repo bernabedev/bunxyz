@@ -12,21 +12,6 @@ This repository contains the source code for the **Bunxyz framework** and its co
 
 This is a monorepo managed using **Bun Workspaces**.
 
-## Monorepo Structure
-
-The repository is organized as follows:
-
-bunxyz/
-├── packages/ # Contains all individual packages
-│ ├── bunxyz/ # The core Bunxyz framework library
-│ └── bunxyz-cli/ # The Bunxyz command-line interface tool
-├── docs/ # Documentation (Optional)
-├── .gitignore # Git ignore rules for the entire repo
-├── package.json # Root package.json defining workspaces and common dev dependencies
-├── tsconfig.base.json # Base TypeScript configuration (Optional)
-├── README.md # This file
-└── bun.lockb # Bun lockfile
-
 ## Packages
 
 - **`packages/bunxyz`**: The core framework package. It exports the main `App` class, `BunxyzRequest`, `BunxyzResponse`, type definitions, and other core functionalities.
