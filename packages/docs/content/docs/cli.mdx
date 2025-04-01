@@ -52,3 +52,74 @@ bunxyz create my-api
 ```
 
 This will create a `my-api` directory containing the default Bunxyz project template, ready for you to `cd` into, run `bun install`, and start with `bun dev`.
+
+### bunxyz generate
+
+This command (aliased as `g`) is used to generate common code structures within an existing Bunxyz project.
+
+**Important**: generate commands must be run from the root directory of an existing Bunxyz project (the one containing `src/api`).
+
+## `generate crud`
+
+This subcommand scaffolds the necessary files for handling CRUD (Create, Read, Update, Delete) operations for a given resource within your API. It sets up the route handlers and Data Transfer Object (DTO) files.
+
+### Usage:
+
+```bash
+bunxyz generate crud <resourceName> [options]
+# or alias:
+bunxyz g crud <resourceName> [options]
+```
+
+Use code with caution.
+
+### Arguments:
+
+- `<resourceName>` (Required): The name of the resource (e.g., products, users, posts). This will be used for directory names, file names, and function/variable naming (converted to appropriate cases like `Products`, `productDto`).
+
+### Options:
+
+- `-p, --path <relativePath>` (Optional): Specify a relative path within `src/api` where the resource directory should be created. For example, `-p v1/admin` would create files in `src/api/v1/admin/<resourceName>/`.
+- `--demo-data` (Optional): Include placeholder implementation logic and example Zod schemas directly within the generated route files for quick demonstration purposes. Without this flag, route handlers will be mostly empty stubs importing the DTOs, and the DTO schemas will be empty, requiring you to define them.
+
+### Output:
+
+The command creates the following file structure within your `src/api` directory (potentially inside the specified `--path`):
+
+```
+src/api/.../<resourceName>/
+├── dto/
+│   ├── create-<resourceName>.dto.ts  # Zod schema definition for creating the resource
+│   └── update-<resourceName>.dto.ts  # Zod schema definition for updating (usually partial)
+├── index.ts                         # Route handler for GET (list) and POST (create)
+└── [id].ts                          # Route handler for GET (by ID), PUT (update), DELETE
+```
+
+### Default Behavior (without `--demo-data`):
+
+- The generated `index.ts` and `[id].ts` files contain basic handler function signatures that import the corresponding DTO schemas. They include comments (`// TODO:`) indicating where to add your business logic (e.g., database interactions).
+- The DTO files (`create-*.dto.ts`, `update-*.dto.ts`) contain empty Zod schemas (`z.object({})`). You need to define the properties and validation rules within these DTO files.
+
+### Behavior with `--demo-data`:
+
+- The `index.ts` and `[id].ts` files will include:
+  - Basic Zod schemas defined directly within these route files (for easier initial testing, separate from the DTO files).
+  - Placeholder logic (e.g., logging to console, using dummy data arrays, generating random IDs).
+  - More comments explaining the placeholder code.
+- The DTO files in the `dto/` directory are still created but contain empty schemas, as the demo logic uses the inline schemas in the route files.
+
+### Examples:
+
+```bash
+# Generate basic CRUD for 'posts' in src/api/posts/
+bunxyz g crud posts
+
+# Generate CRUD for 'articles' under src/api/blog/v2/
+bunxyz g crud articles -p blog/v2
+
+# Generate CRUD for 'products' with demo data and logic
+bunxyz g crud products --demo-data
+
+# Generate CRUD for 'orders' under src/api/shop/ with demo data
+bunxyz g crud orders -p shop --demo-data
+```
