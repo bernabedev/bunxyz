@@ -5,6 +5,7 @@ import chalk from "chalk";
 import { Command } from "commander";
 import packageJson from "../package.json"; // Import to get the version
 import { createProject } from "../src/commands/create.js"; // Important to use .js for post-build compatibility if using tsc
+import { generateCrud } from "../src/commands/generate";
 
 const program = new Command();
 
@@ -24,11 +25,23 @@ program
     await createProject(projectName);
   });
 
-// Add more commands here in the future
-// program
-//   .command('generate <type> <name>')
-//   .description('Generate components (e.g., route, middleware)')
-//   .action(...)
+const generate = program
+  .command("generate")
+  .alias("g") // Short alias
+  .description("Generate code components for your Bunxyz project");
+
+generate
+  .command("crud <resourceName>")
+  .description(
+    "Generate CRUD API route handlers for a resource (e.g., users, products)"
+  )
+  .option(
+    "-p, --path <relativePath>",
+    "Optional path within src/api (e.g., v1/admin)"
+  )
+  .action(async (resourceName, options) => {
+    await generateCrud(resourceName, options);
+  });
 
 program.parse(process.argv);
 

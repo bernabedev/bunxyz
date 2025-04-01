@@ -26,10 +26,5 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "include": ["src/**/*.ts", "bin/**/*.ts", "package.json"],
-  "exclude": ["node_modules", "dist", "src/templates"],
-  "references": [
-    {
-      "path": "../bunxyz"
-    }
-  ]
+  "exclude": ["node_modules", "dist", "src/templates"]
 }
