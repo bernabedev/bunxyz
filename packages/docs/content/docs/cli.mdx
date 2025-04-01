@@ -1,0 +1,54 @@
+---
+title: CLI Tool
+description: Learn how to use the Bunxyz Command Line Interface (CLI) to manage your projects.
+---
+
+# Command Line Interface (CLI)
+
+Bunxyz comes with a helpful Command Line Interface (CLI) tool, typically invoked as `bunxyz`, designed to streamline common development tasks like project creation and potentially generating boilerplate code in the future.
+
+## Installation
+
+If you haven't already, you can install the CLI globally using Bun:
+
+```bash title="Install Bunxyz CLI"
+bun add -g @bunxyz/cli
+# Use code with caution.
+```
+
+Verify the installation by running:
+
+```bash
+bunxyz --version
+# or
+bunxyz -v
+# Use code with caution.
+```
+
+This should print the installed version number of the CLI.
+
+## Available Commands
+
+### bunxyz create
+
+This is the primary command used to scaffold a new Bunxyz project.
+
+**Usage:**
+
+```bash
+bunxyz create <project-name> [options]
+# Use code with caution.
+```
+
+**Arguments:**
+
+- `<project-name>` (Required): The name of the directory where the new project will be created.
+
+**Example:**
+
+```bash
+bunxyz create my-api
+# Use code with caution.
+```
+
+This will create a `my-api` directory containing the default Bunxyz project template, ready for you to `cd` into, run `bun install`, and start with `bun dev`.

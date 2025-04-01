@@ -1,0 +1,313 @@
+---
+title: Core Concepts
+description: Understand the fundamental building blocks of Bunxyz like App, Routing, Request, Response, Middleware, and Validation.
+---
+
+import { Callout } from "fumadocs-ui/components/callout"; // Optional: For notes/warnings
+
+# Core Concepts
+
+This section covers the essential concepts you'll work with when building applications with Bunxyz.
+
+## The `App` Instance
+
+The heart of every Bunxyz application is an instance of the `App` class. You import it from the `bunxyz` package and create a new instance to set up your server.
+
+```typescript title="src/index.ts"
+import { App } from 'bunxyz';
+
+// Create a new App instance
+const app = new App();
+
+// Optionally configure the port and the API directory for file-based routing
+// const app = new App(8080, './src/my-routes');
+
+// ... add middleware and routes ...
+
+// Start the server
+app.listen((port) => {
+  console.log(`🦊 Bunxyz server running at http://localhost:${port}`);
+});
+# Use code with caution.
+```
+
+The App instance is used to register routes, add middleware, and start/stop the underlying Bun server.
+
+## Routing
+
+Bunxyz provides two primary methods for defining how your application responds to incoming requests:
+
+- Manual Routing: Explicitly define routes using methods on the App instance.
+- File-Based Routing: Automatically create routes based on the file structure within your api directory (covered in detail here).
+
+You can use either method or combine them in the same application.
+
+### Manual Routing
+
+Use the HTTP method functions (app.get(), app.post(), app.put(), app.delete(), etc.) attached to your app instance to define routes and their corresponding handler functions.
+
+```typescript
+import { App, BunxyzRequest, BunxyzResponse } from 'bunxyz';
+
+const app = new App();
+
+// Define a handler for GET requests to the root path '/'
+app.get('/', (req: BunxyzRequest) => {
+  return BunxyzResponse.text('Welcome to Bunxyz!');
+});
+
+// Define a handler for POST requests to '/users'
+app.post('/users', async (req: BunxyzRequest) => {
+  // ... logic to handle user creation ...
+  // For example, using req.json() to get and validate body
+  return BunxyzResponse.json({ message: 'User created' }, { status: 201 });
+});
+
+app.listen(); // Start the server
+# Use code with caution.
+```
+
+Each handler function receives a BunxyzRequest object and must return a standard Response object (or a Promise that resolves to one). The BunxyzResponse class provides convenient helpers for creating responses.
+
+### Route Parameters
+
+Define dynamic segments in your route paths using a colon (:) followed by the parameter name. These parameters become available as string values within the req.params object.
+
+```typescript
+app.get('/products/:productId', (req: BunxyzRequest) => {
+  const { productId } = req.params; // productId is a string
+  // e.g., if URL is /products/abc-123, productId will be 'abc-123'
+  console.log(`Fetching product with ID: ${productId}`);
+
+  // ... fetch product data ...
+
+  return BunxyzResponse.json({ id: productId, name: 'Example Product' });
+});
+
+app.get('/users/:userId/posts/:postId', (req: BunxyzRequest) => {
+  const { userId, postId } = req.params;
+  return BunxyzResponse.json({ userId, postId });
+});
+# Use code with caution.
+```
+
+<Callout title="Note">
+  Route parameter values extracted from the URL are always **strings**. If you
+  need a number, you'll need to parse it (e.g., `parseInt(productId)` or use Zod
+  schema coercion for validation).
+</Callout>
+
+## Request (BunxyzRequest)
+
+Your route handlers and middleware receive a BunxyzRequest object. It extends the standard Bun Request object, providing additional convenience properties and methods.
+
+### req.params
+
+An object containing key-value pairs mapped from the named route parameters in your path definition.
+
+```typescript
+// Route: /items/:itemId
+// Request URL: /items/xyz
+// Handler:
+app.get('/items/:itemId', (req: BunxyzRequest) => {
+  console.log(req.params); // Output: { itemId: 'xyz' }
+  const id = req.params.itemId;
+  // ...
+});
+# Use code with caution.
+```
+
+### req.query
+
+An object containing the parsed query string parameters from the URL.
+
+If a key appears once, its value is a string.
+
+If a key appears multiple times, its value is an array of strings.
+
+```typescript
+// Request URL: /search?term=bunxyz&limit=20&tags=fast&tags=simple
+// Handler:
+app.get('/search', (req: BunxyzRequest) => {
+  console.log(req.query);
+  // Output: { term: 'bunxyz', limit: '20', tags: ['fast', 'simple'] }
+  // ...
+});
+# Use code with caution.
+```
+
+### req.json(schema?)
+
+Asynchronously parses the request body as JSON. This is the primary method for handling JSON request bodies and performing validation.
+
+Parsing: It reads the request body stream and parses it as JSON. If the body is not valid JSON, it throws an error.
+
+Validation (Optional): You can pass a Zod schema as an argument.
+
+If provided, Bunxyz will validate the parsed JSON against the schema.
+
+On success, it returns the validated (and potentially transformed by Zod) data, correctly typed according to your schema.
+
+On failure, it throws a RequestValidationError, automatically caught by the global error handler, which sends back a detailed 400 Bad Request response.
+
+No Schema: If called without a schema (await req.json()), it simply returns the parsed body as any.
+
+```typescript
+import { z } from 'zod';
+import { type BunxyzRequest, BunxyzResponse } from 'bunxyz';
+
+// Assume you have a Zod schema defined, e.g., in a DTO file
+const CreateUserSchema = z.object({
+  username: z.string().min(3),
+  email: z.string().email(),
+  age: z.number().optional(),
+});
+
+// Inside a POST handler
+export async function POST(req: BunxyzRequest) {
+  try {
+    // Parse AND validate the request body against the schema
+    const validatedUserData = await req.json(CreateUserSchema);
+
+    // Type safety! validatedUserData matches the schema structure
+    console.log('Validated username:', validatedUserData.username);
+
+    // ... proceed with creating the user ...
+
+    return BunxyzResponse.json(validatedUserData, { status: 201 });
+
+  } catch (error) {
+     // RequestValidationError is handled globally by default.
+     // You might catch other errors here (e.g., database errors).
+     console.error("Error creating user:", error);
+     // Re-throw to let the global handler manage it or return a custom 500
+     throw error;
+  }
+}
+# Use code with caution.
+```
+
+### req.text()
+
+Asynchronously reads the entire request body as a single string. Useful for non-JSON payloads.
+
+```typescript
+const plainTextBody = await req.text();
+console.log('Received text:', plainTextBody);
+# Use code with caution.
+```
+
+## Response (BunxyzResponse)
+
+BunxyzResponse is a utility class with static methods designed to simplify the creation of standard Response objects.
+
+### BunxyzResponse.json(data: any, init?: ResponseInit)
+
+Creates a JSON response. Sets the Content-Type header to application/json automatically.
+
+```typescript
+// Simple JSON response
+return BunxyzResponse.json({ success: true, data: { id: 1 } });
+
+// JSON response with a custom status code
+return BunxyzResponse.json({ error: 'Resource not found' }, { status: 404 });
+# Use code with caution.
+```
+
+### BunxyzResponse.text(data: string, init?: ResponseInit)
+
+Creates a plain text response. Sets Content-Type to text/plain.
+
+```typescript
+return BunxyzResponse.text('Operation successful.');
+return BunxyzResponse.text('Not Allowed', { status: 405 });
+# Use code with caution.
+```
+
+### BunxyzResponse.html(data: string | BunFile, init?: ResponseInit)
+
+Creates an HTML response (text/html). It can accept either a string containing HTML or a BunFile object for efficient streaming of HTML files directly from disk.
+
+```typescript
+// Respond with an HTML string
+return BunxyzResponse.html("<h1>Hello World!</h1>");
+```
+
+### BunxyzResponse.validationError(zodError: ZodError, init?: ResponseInit)
+
+Creates a standardized JSON response for Zod validation errors (status code 400). It takes a Zod error object and formats it into a user-friendly error structure. This is used internally when req.json(schema) fails, but can be used manually if needed.
+
+```typescript
+// Generally not needed manually when using req.json(schema)
+// const result = SomeSchema.safeParse(someData);
+// if (!result.success) {
+//   return BunxyzResponse.validationError(result.error);
+// }
+# Use code with caution.
+```
+
+## Middleware
+
+Middleware functions are handlers that execute before your main route handler. They form a chain, allowing you to perform actions like logging, authentication, data pre-processing, or modifying headers on requests sequentially.
+
+A middleware function has the signature `(req: BunxyzRequest, next: () => Promise<Response>)`.
+
+req: The BunxyzRequest object.
+
+next: A function you must call (await next()) to pass control to the next middleware in the chain or, eventually, to the final route handler. If you don't call next(), the request processing stops at that middleware (useful for authentication checks, for example).
+
+Register global middleware using app.use(). They execute in the order they are added.
+
+```typescript
+import { type BunxyzRequest } from 'bunxyz';
+
+// Example: Simple Request Logger Middleware
+app.use(async (req: BunxyzRequest, next) => {
+  console.log(`[${new Date().toISOString()}] Received: ${req.method} ${req.url}`);
+
+  // Pass control to the next middleware or route handler
+  const response = await next(); // MUST await and return the response
+
+  console.log(`[${new Date().toISOString()}] Responded with status: ${response.status}`);
+
+  // Return the response received from the next() call
+  return response;
+});
+
+// Example: Basic API Key Authentication
+// app.use(async (req: BunxyzRequest, next) => {
+//   const apiKey = req.headers.get('X-API-KEY');
+//   if (apiKey !== 'my-secret-key') {
+//      // Stop processing and return an error response immediately
+//      return BunxyzResponse.json({ message: 'Unauthorized' }, { status: 401 });
+//   }
+//   // Key is valid, proceed to the next handler
+//   return await next();
+// });
+
+// Add your routes AFTER the middleware
+app.get('/', (req) => { /* ... */ });
+
+app.listen();
+# Use code with caution.
+```
+
+## Validation (with Zod)
+
+Bunxyz embraces Zod for robust data validation.
+
+### Body Validation
+
+As shown in the req.json(schema?) section, validating JSON request bodies is straightforward: define your Zod schema and pass it to req.json(). The framework handles the parsing, validation, and error response generation if validation fails.
+
+```typescript
+// In your handler:
+const CreateProductSchema = z.object({ /* ... */ });
+const validatedData = await req.json(CreateProductSchema);
+// ... use validatedData
+# Use code with caution.
+```
+
+### Params & Query Validation (File Routes)
+
+When using File-Based Routing, Bunxyz offers automatic validation for route parameters (req.params) and query parameters (req.query). You simply export named schemas (paramsSchema, querySchema) from your route file. See the File-Based Routing section for details.

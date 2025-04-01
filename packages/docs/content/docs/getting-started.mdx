@@ -1,0 +1,120 @@
+---
+title: Getting Started
+description: How to install Bunxyz and create your first project.
+---
+
+import { Steps } from "fumadocs-ui/components/steps"; // Optional: For styled steps
+
+# Getting Started
+
+This guide will walk you through setting up your development environment and creating your first Bunxyz application.
+
+## Prerequisites
+
+Before you begin, ensure you have the [Bun](https://bun.sh/) runtime installed. Bunxyz is built specifically for Bun. You can install it via their official website or using the command:
+
+```bash title="Install Bun (if you haven't already)"
+curl -fsSL https://bun.sh/install | bash
+# Use code with caution.
+# Mdx
+# (Refer to the official Bun documentation for alternative installation methods).
+```
+
+## Installation (CLI)
+
+The recommended way to start a new Bunxyz project is by using the official Command Line Interface (CLI).
+
+If you haven't installed it yet, you can install it globally using Bun:
+
+```bash title="Install Bunxyz CLI globally"
+bun add -g @bunxyz/cli
+# Use code with caution.
+```
+
+Alternatively, if you are developing the framework itself and have the monorepo set up, you can link your local build:
+
+```bash title="Link local CLI (for framework developers)"
+# Navigate to the CLI package within the monorepo
+cd path/to/bunxyz-monorepo/packages/bunxyz-cli
+# Create the global link
+bun link
+# Use code with caution.
+```
+
+## Creating Your First Project
+
+<Steps>
+Generate the Project
+Once the CLI is available, use the create command to scaffold a new project. Replace `my-bunxyz-app` with your desired project name:
+
+```bash
+bunxyz create my-bunxyz-app
+# Use code with caution.
+```
+
+This command creates a new directory with the specified name and populates it with a basic Bunxyz project template.
+
+### Navigate to Project Directory
+
+Change into your newly created project folder:
+
+```bash
+cd my-bunxyz-app
+# Use code with caution.
+```
+
+### Install Dependencies
+
+Install the necessary project dependencies (including bunxyz itself) using Bun:
+
+```bash
+bun install
+# Use code with caution.
+```
+
+</Steps>
+
+## Running the Development Server
+
+To start the development server with hot reloading enabled, run:
+
+```bash
+bun dev
+# Use code with caution.
+```
+
+Bunxyz will start the server, typically on http://localhost:3000. Any changes you make to your source files (.ts files) will automatically trigger a server restart.
+
+You should see output similar to this in your console:
+
+```log
+🦊 Bunxyz server running at http://localhost:3000
+# Use code with caution.
+```
+
+You can now open your browser and navigate to the running application! Try accessing the default `/api` route provided in the template.
+
+## Project Structure (Default Template)
+
+The `bunxyz create` command generates the following essential structure:
+
+```plaintext
+my-bunxyz-app/
+├── src/
+│   ├── api/             # Directory for File-Based Routing
+│   │   └── index.ts     # Example route handler for /api
+│   └── index.ts         # Main application entry point (App initialization)
+├── .gitignore           # Git ignore file
+├── package.json         # Project configuration and dependencies
+└── tsconfig.json        # TypeScript configuration
+```
+
+### src/index.ts:
+
+This is the main entry point where you initialize the App instance and start the server.
+
+### src/api/:
+
+This directory holds your route handlers when using the convention-based File-Based Routing system.
+
+Now that you have your project running, let's dive into the Core Concepts.

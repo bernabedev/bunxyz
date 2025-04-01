@@ -1,0 +1,11 @@
+{
+  "title": "Documents",
+  "pages": [
+    "index",
+    "getting-started",
+    "core-concepts",
+    "file-based-routing",
+    "cli",
+    "error-handling"
+  ]
+}

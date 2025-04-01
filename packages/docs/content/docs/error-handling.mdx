@@ -1,0 +1,133 @@
+---
+title: Error Handling
+description: Understand how Bunxyz handles validation errors, routing errors, and unhandled exceptions.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+# Error Handling
+
+Bunxyz includes built-in mechanisms to catch and handle common errors gracefully, providing standardized responses for different error scenarios.
+
+## Validation Errors (400 Bad Request)
+
+Bunxyz leverages Zod for validation, and errors arising from failed validations are handled automatically.
+
+### Body Validation (`req.json(schema)`)
+
+When you use `await req.json(YourSchema)` and the validation against `YourSchema` fails:
+
+1.  A `RequestValidationError` is thrown internally.
+2.  The framework's global error handler catches this specific error.
+3.  A **400 Bad Request** JSON response is automatically sent back to the client.
+4.  The response body contains a structured error message detailing the validation issues, generated using Zod's `.flatten()` method.
+
+**Example 400 Response Body (Validation Error):**
+
+```json
+{
+  "error": "Validation Failed",
+  "details": {
+    "fieldName": ["Error message for fieldName"],
+    "nested": {
+      "field": ["Error for nested field"]
+    }
+    // ... other field errors
+  },
+  "formErrors": [
+    // Global errors not specific to a field (less common with object schemas)
+  ]
+}
+```
+
+You generally do not need to add specific try...catch blocks in your handlers just for catching RequestValidationError, as the framework handles it.
+
+Params & Query Validation (File Routes)
+When using File-Based Routing and exporting paramsSchema or querySchema:
+
+Bunxyz performs the validation before your route handler is executed.
+
+If validation fails, Bunxyz immediately sends back the same structured 400 Bad Request JSON response as described above.
+
+Your route handler function will not be called in case of a validation failure for params or query.
+
+Routing Errors (404 Not Found)
+If an incoming request's method and path do not match any defined routes (either manually defined or via file-based routing):
+
+Bunxyz automatically sends a 404 Not Found response.
+
+The default response body is simple JSON:
+
+```json
+{
+  "error": "Not Found"
+}
+```
+
+Unhandled Server Errors (500 Internal Server Error)
+Any unexpected errors that occur during the execution of your middleware or route handlers, and are not caught by your own try...catch blocks, will be caught by the framework's top-level error handler.
+
+The error is caught.
+
+The error details (including stack trace) are logged to the console (useful for debugging).
+
+A generic 500 Internal Server Error JSON response is sent to the client to avoid leaking potentially sensitive error details.
+
+Example 500 Response Body:
+
+```json
+{
+  "error": "Internal Server Error",
+  "message": "Specific error message if available, otherwise generic."
+}
+```
+
+<Callout type="warning" title="Production Environments">
+  For production deployments, you might consider adding more sophisticated error
+  tracking (e.g., integrating with services like Sentry) or customizing the 500
+  error response further, perhaps via custom middleware, to ensure no sensitive
+  information is ever exposed.
+</Callout>
+
+## Custom Error Handling
+
+While Bunxyz provides robust default error handling, you can implement custom logic:
+
+try...catch in Handlers: You can use try...catch blocks within your specific route handlers to catch errors originating from database calls, external API requests, or other specific operations. This allows you to return custom error responses or perform specific cleanup actions.
+
+### Example
+
+```typescript
+import { BunxyzRequest, BunxyzResponse } from "bunxyz";
+import { DatabaseError } from "@/lib/db"; // Example custom DB error
+
+export async function POST(req: BunxyzRequest) {
+  try {
+    const data = await req.json(SomeSchema);
+    const result = await database.createUser(data); // Might throw DatabaseError
+    return BunxyzResponse.json(result, { status: 201 });
+  } catch (error) {
+    // Catch specific errors first
+    if (error instanceof DatabaseError && error.code === "DUPLICATE_EMAIL") {
+      return BunxyzResponse.json(
+        { message: "Email already exists" },
+        { status: 409 }
+      ); // Conflict
+    }
+    // RequestValidationError is usually handled globally, but could be caught here if needed
+    // if (error instanceof RequestValidationError) { ... }
+
+    // Log unexpected errors within this handler's scope
+    console.error("Specific handler error:", error);
+
+    // Re-throw the error to let the global 500 handler deal with it
+    // OR return a custom 500 response directly
+    throw error;
+    // return BunxyzResponse.json({ message: 'Failed to process request'}, { status: 500 });
+  }
+}
+```
+
+### Error Handling Middleware
+
+For more advanced scenarios, you could potentially implement a custom middleware placed last in the app.use() chain specifically designed to catch errors passed down via next(error), although relying on the built-in global handler is often sufficient.

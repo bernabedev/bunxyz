@@ -1,0 +1,180 @@
+---
+title: File-Based Routing
+description: Learn how Bunxyz automatically creates routes based on your file and directory structure in the 'api' folder.
+---
+
+import { File, Folder, Files } from "fumadocs-ui/components/files";
+
+# File-Based Routing
+
+Bunxyz offers an intuitive file-based routing system as an alternative (or addition) to manual route definitions using `app.get()`, `app.post()`, etc. This convention-over-configuration approach allows you to define your API structure simply by organizing files and folders.
+
+## The `api` Directory
+
+By default, Bunxyz looks for route files within the `src/api` directory of your project. You can customize this directory path when creating the `App` instance:
+
+```typescript title="src/index.ts"
+import { App } from 'bunxyz';
+
+// Default behavior: Looks in 'src/api'
+// const app = new App();
+
+// Custom directory: Looks in 'src/routes/v1'
+const app = new App(3000, './src/routes/v1');
+
+app.listen();
+# Use code with caution.
+```
+
+## Defining Routes
+
+Inside the designated API directory (src/api by default):
+
+- Files map to URL segments: Each .ts (or .js) file corresponds to a part of the URL path.
+- Folders create nested paths: Directories are used to create nested routes.
+- HTTP Method Exports: Exported functions named after uppercase HTTP methods (GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD) within a file become the route handlers for that specific method and path.
+
+### Example Structure:
+
+<Files>
+  <Folder name="src" defaultOpen>
+    <Folder name="api" defaultOpen>
+      <File name="index.ts" />
+      <File name="status.ts" />
+      <Folder name="users" defaultOpen>
+        <File name="index.ts" />
+        <File name="[userId].ts" />
+      </Folder>
+      <Folder name="products">{/* ...product routes... */}</Folder>
+    </Folder>
+    <File name="index.ts" />
+  </Folder>
+</Files>
+
+### Mapping:
+
+- src/api/index.ts → /api
+- src/api/status.ts → /api/status
+- src/api/users/index.ts → /api/users
+- src/api/users/[userId].ts → /api/users/:userId
+
+### Example Handler File (src/api/status.ts):
+
+```typescript
+import { BunxyzRequest, BunxyzResponse } from 'bunxyz';
+
+// Handles GET /api/status
+export function GET(req: BunxyzRequest) {
+  return BunxyzResponse.json({ status: 'ok', timestamp: Date.now() });
+}
+
+// Handles POST /api/status (Example)
+// export function POST(req: BunxyzRequest) { ... }
+# Use code with caution.
+```
+
+## Dynamic Segments (Parameters)
+
+To create routes with dynamic parameters (like user IDs, product slugs, etc.), use square brackets ([]) in your file or folder names. The name inside the brackets becomes the parameter name available in req.params.
+
+- src/api/users/[userId].ts maps to /api/users/:userId.
+- A request to /api/users/123 will trigger the handlers in this file, and req.params will be `{ userId: '123' }`.
+- src/api/posts/[postId]/comments/[commentId].ts maps to /api/posts/:postId/comments/:commentId.
+- A request to /api/posts/abc/comments/456 results in req.params being `{ postId: 'abc', commentId: '456' }`.
+
+### Example (src/api/users/[userId].ts):
+
+```typescript
+import { BunxyzRequest, BunxyzResponse } from 'bunxyz';
+import { z } from 'zod';
+
+// Optional: Validate the userId param automatically
+export const paramsSchema = z.object({
+  userId: z.string().regex(/^[0-9a-f]+$/, "User ID must be hexadecimal"), // Example regex
+});
+
+// Handles GET /api/users/:userId
+export function GET(req: BunxyzRequest) {
+  // If paramsSchema is defined, userId is already validated here
+  const { userId } = req.params;
+  // ... fetch user data for userId ...
+  return BunxyzResponse.json({ id: userId, name: `User ${userId}` });
+}
+
+// Handles PUT /api/users/:userId
+// export async function PUT(req: BunxyzRequest) { ... }
+# Use code with caution.
+```
+
+## Index Routes
+
+Files named index.ts (or index.js) serve as the "root" route for their directory.
+
+- src/api/index.ts handles requests to /api.
+- src/api/products/index.ts handles requests to /api/products.
+
+This allows you to define handlers for the base path of a resource collection (like getting all products at /api/products via GET in products/index.ts) separately from handlers for individual items (like getting one product at /api/products/:productId via GET in products/[productId].ts).
+
+## Params & Query Validation (File Routes)
+
+A major advantage of file-based routing is automatic validation of route and query parameters using Zod.
+
+### Route Parameters:
+
+Export a Zod schema named paramsSchema from your route file. Bunxyz will use it to validate the values captured by dynamic `segments ([...])`.
+
+### Query Parameters:
+
+Export a Zod schema named querySchema. Bunxyz will use it to validate the parameters from the URL's query string (?key=value).
+
+If validation fails for either paramsSchema or querySchema, Bunxyz automatically sends a 400 Bad Request response with validation details before your handler function is even called. If validation passes, the (potentially coerced or defaulted by Zod) values are available on req.params and req.query within your handler.
+
+```typescript
+import { z } from 'zod';
+import { BunxyzRequest, BunxyzResponse } from 'bunxyz';
+
+// Validate the :postId route parameter
+export const paramsSchema = z.object({
+  postId: z.coerce.number().int().positive("Post ID must be a positive integer"),
+});
+
+// Validate query parameters like ?includeAuthor=true&limit=10
+export const querySchema = z.object({
+  includeAuthor: z.coerce.boolean().optional().default(false),
+  limit: z.coerce.number().int().min(1).max(50).optional().default(10),
+});
+
+// Handler for GET /api/posts/:postId
+export function GET(req: BunxyzRequest) {
+  // Validation passed if we reach here!
+  const { postId } = req.params; // postId is now a guaranteed positive integer
+  const { includeAuthor, limit } = req.query; // These have defaults and correct types
+
+  // ... fetch post data using validated postId, includeAuthor, limit ...
+
+  return BunxyzResponse.json({ postId, includeAuthor, limit, content: "..." });
+}
+# Use code with caution.
+```
+
+```
+<Callout title="Body Validation">
+Remember that **body validation** (for POST, PUT, PATCH) is handled separately using [`req.json(schema)`](./core-concepts#reqjsonschema) within your handler function. File-based routing does *not* automatically validate the request body based on exported schemas.
+</Callout>
+```
+
+## Organizing Schemas (DTOs)
+
+While you can define paramsSchema and querySchema directly in your route files, it's often cleaner to organize complex Zod schemas, especially for request bodies (used with req.json(schema)), into separate Data Transfer Object (DTO) files. A common pattern is to place these in a dto/ subdirectory within the relevant API folder.
+
+```plaintext
+src/api/orders/
+├── dto/
+│   ├── create-order.dto.ts  # Exports CreateOrderSchema (for body)
+│   └── query-orders.dto.ts  # Exports QueryOrdersSchema (for query)
+├── index.ts                 # Handles /api/orders (uses schemas from dto/)
+└── [orderId].ts             # Handles /api/orders/:orderId
+# Use code with caution.
+```
+
+File-based routing provides a powerful and organized way to structure your API. Combine it with manual routing and robust Zod validation for a flexible and type-safe development experience. Next.
