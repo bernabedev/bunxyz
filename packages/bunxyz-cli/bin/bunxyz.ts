@@ -39,6 +39,10 @@ generate
     "-p, --path <relativePath>",
     "Optional path within src/api (e.g., v1/admin)"
   )
+  .option(
+    "--demo-data",
+    "Include placeholder logic and example data in generated files"
+  )
   .action(async (resourceName, options) => {
     await generateCrud(resourceName, options);
   });
