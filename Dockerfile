@@ -13,7 +13,6 @@ RUN bun install --frozen-lockfile --production
 
 # Copy all files needed for build
 COPY packages/docs ./packages/docs
-COPY packages/bunxyz ./packages/bunxyz  # Assuming docs depends on bunxyz
 
 # Build the docs application
 RUN bun run --filter docs build
