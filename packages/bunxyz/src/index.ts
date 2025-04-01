@@ -21,7 +21,7 @@ export { BunxyzResponse } from "./response";
 // Adjust the path if these types are defined elsewhere.
 export type { Handler, Middleware } from "./app";
 
-export type { RequestValidationError } from "./errors";
+export { RequestValidationError } from "./errors";
 
 // Note: Internal types or implementation details like 'RouteDefinition'
 // or utility functions used only within the framework are NOT exported here
