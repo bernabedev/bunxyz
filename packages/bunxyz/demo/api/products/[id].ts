@@ -2,8 +2,9 @@
 // IMPORTANT: In a real app, this would interact with a database.
 
 import { products } from ".";
-import type { BunxyzRequest } from "../../request";
-import { BunxyzResponse } from "../../response";
+import { BunxyzRequest } from "../../../src/request";
+import { BunxyzResponse } from "../../../src/response";
+import { updateSchema } from "./dto/product.dto";
 
 /**
  * Handles GET requests to /api/products/:id
@@ -42,52 +43,26 @@ export const PUT = async (req: BunxyzRequest): Promise<Response> => {
     return BunxyzResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
-  try {
-    // Parse the JSON body from the request to get update data
-    const updateData = await req.json<{ name?: string; price?: number }>(); // Type assertion for expected body structure
+  // Parse the JSON body from the request to get update data
+  const updateData = await req.json(updateSchema);
 
-    // Basic validation: Check if at least some data was provided
-    if (
-      !updateData ||
-      (updateData.name === undefined && updateData.price === undefined)
-    ) {
-      return BunxyzResponse.json(
-        { error: "No update data provided" },
-        { status: 400 }
-      );
-    }
+  // Get the original product
+  const originalProduct = products[productIndex];
 
-    // Get the original product
-    const originalProduct = products[productIndex];
+  // Create the updated product object
+  // Merges existing data with new data. Only updates fields present in updateData.
+  const updatedProduct = {
+    ...originalProduct, // Spread existing properties
+    ...(updateData.name !== undefined && { name: updateData.name }), // Conditionally include name if provided
+    ...(updateData.price !== undefined && { price: updateData.price }), // Conditionally include price if provided
+    ...(updateData.tags !== undefined && { tags: updateData.tags }), // Conditionally include tags if provided
+  };
 
-    // Create the updated product object
-    // Merges existing data with new data. Only updates fields present in updateData.
-    const updatedProduct = {
-      ...originalProduct, // Spread existing properties
-      ...(updateData.name !== undefined && { name: updateData.name }), // Conditionally include name if provided
-      ...(updateData.price !== undefined && { price: updateData.price }), // Conditionally include price if provided
-    };
+  // Update the product in the array
+  products[productIndex] = updatedProduct;
 
-    // Update the product in the array
-    products[productIndex] = updatedProduct;
-
-    // Return the updated product with a 200 OK status
-    return BunxyzResponse.json(updatedProduct);
-  } catch (error) {
-    // Handle potential errors during JSON parsing (e.g., invalid JSON)
-    if (error instanceof SyntaxError) {
-      return BunxyzResponse.json(
-        { error: "Invalid JSON format in request body" },
-        { status: 400 }
-      );
-    }
-    // Handle other potential errors
-    console.error("Error updating product:", error);
-    return BunxyzResponse.json(
-      { error: "Internal server error during update" },
-      { status: 500 }
-    );
-  }
+  // Return the updated product with a 200 OK status
+  return BunxyzResponse.json(updatedProduct);
 };
 
 /**

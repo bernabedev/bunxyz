@@ -34,6 +34,7 @@
     }
   },
   "scripts": {
+    "dev": "bun --watch ./demo/index.ts",
     "build": "bun clean && bun build ./src/index.ts --outdir ./dist --target=bun && bun run build:declaration",
     "build:declaration": "tsc --outdir ./dist --emitDeclarationOnly --project tsconfig.types.json",
     "clean": "rm -rf dist",
