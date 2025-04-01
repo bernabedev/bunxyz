@@ -3,9 +3,8 @@
 A minimalist, fast, file-system based routing framework for **Bun**, inspired by Express and Next.js/Remix. Leverage Bun's incredible speed with a familiar and intuitive development experience.
 
 [![Made with Bun](https://img.shields.io/badge/Made%20with-Bun-yellow.svg)](https://bun.sh)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/bernabedev/bunxyz/ci.yml?branch=main)](https://github.com/bernabedev/bunxyz/actions)
 [![NPM Version - Framework](https://img.shields.io/npm/v/bunxyz.svg)](https://www.npmjs.com/package/bunxyz) <!-- Placeholder -->
-[![NPM Version - CLI](https://img.shields.io/npm/v/@bunxyz/cli.svg)](https://www.npmjs.com/package/@bunxyz/cli) <!-- Placeholder -->
+[![NPM Version - CLI](https://img.shields.io/npm/v/bunxyz-cli.svg)](https://www.npmjs.com/package/bunxyz-cli) <!-- Placeholder -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) <!-- Adjust if needed -->
 
 This repository contains the source code for the **Bunxyz framework** and its command-line interface (**Bunxyz CLI**). Bunxyz aims to be a fast, lightweight, and developer-friendly web framework built specifically for the [Bun](https://bun.sh/) runtime.
@@ -15,7 +14,7 @@ This is a monorepo managed using **Bun Workspaces**.
 ## Packages
 
 - **`packages/bunxyz`**: The core framework package. It exports the main `App` class, `BunxyzRequest`, `BunxyzResponse`, type definitions, and other core functionalities.
-- **`packages/bunxyz-cli`**: The CLI tool, published as `@bunxyz/cli` (or your chosen name). Provides the `bunxyz` command for scaffolding new projects (`bunxyz create <project-name>`) and potentially other development tasks in the future.
+- **`packages/bunxyz-cli`**: The CLI tool, published as `bunxyz-cli` (or your chosen name). Provides the `bunxyz` command for scaffolding new projects (`bunxyz create <project-name>`) and potentially other development tasks in the future.
 
 ## Getting Started (Development)
 
