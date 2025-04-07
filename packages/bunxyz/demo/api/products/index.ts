@@ -14,9 +14,9 @@ export const GET = (req: BunxyzRequest): Response => {
 };
 
 export const POST = async (req: BunxyzRequest): Promise<Response> => {
-  const validatedProductData = await req.json(CreateProductDto);
-  const newProduct = { id: Date.now().toString(), ...validatedProductData };
-  console.log({ validatedProductData: newProduct.price });
+  const body = await req.json(CreateProductDto);
+  const newProduct = { id: Date.now().toString(), ...body };
+  console.log({ body: newProduct.price });
   products.push(newProduct as { id: string; name: string; price: number });
   return BunxyzResponse.json(newProduct);
 };
