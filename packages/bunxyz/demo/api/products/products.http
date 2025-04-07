@@ -1,11 +1,13 @@
+@baseUrl = http://localhost:3000
+
 ### GET ALL PRODUCTS
-GET http://localhost:3000/api/products
+GET {{baseUrl}}/api/products
 
 ### GET PRODUCT BY ID
-GET http://localhost:3000/api/products/1
+GET {{baseUrl}}/api/products/1
 
 ### POST PRODUCT
-POST http://localhost:3000/api/products
+POST {{baseUrl}}/api/products
 Content-Type: application/json
 
 {
@@ -14,7 +16,7 @@ Content-Type: application/json
 }
 
 ### PUT PRODUCT
-PUT http://localhost:3000/api/products/1
+PUT {{baseUrl}}/api/products/1
 Content-Type: application/json
 
 {
@@ -23,4 +25,4 @@ Content-Type: application/json
 }
 
 ### DELETE PRODUCT
-DELETE http://localhost:3000/api/products/1
+DELETE {{baseUrl}}/api/products/1
