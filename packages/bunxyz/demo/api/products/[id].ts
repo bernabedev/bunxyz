@@ -4,7 +4,7 @@
 import { products } from ".";
 import { BunxyzRequest } from "../../../src/request";
 import { BunxyzResponse } from "../../../src/response";
-import { updateSchema } from "./dto/product.dto";
+import { UpdateProductDto } from "./dto/product.dto";
 
 /**
  * Handles GET requests to /api/products/:id
@@ -44,7 +44,7 @@ export const PUT = async (req: BunxyzRequest): Promise<Response> => {
   }
 
   // Parse the JSON body from the request to get update data
-  const updateData = await req.json(updateSchema);
+  const updateData = await req.json(UpdateProductDto);
 
   // Get the original product
   const originalProduct = products[productIndex];

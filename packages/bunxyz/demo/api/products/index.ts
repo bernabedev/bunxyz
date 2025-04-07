@@ -1,6 +1,6 @@
 import type { BunxyzRequest } from "../../../src/request";
 import { BunxyzResponse } from "../../../src/response";
-import { bodySchema } from "./dto/product.dto";
+import { CreateProductDto } from "./dto/product.dto";
 
 // Modifying this array directly only works because the server process keeps it in memory.
 export let products = [
@@ -14,8 +14,9 @@ export const GET = (req: BunxyzRequest): Response => {
 };
 
 export const POST = async (req: BunxyzRequest): Promise<Response> => {
-  const validatedProductData = await req.json(bodySchema);
+  const validatedProductData = await req.json(CreateProductDto);
   const newProduct = { id: Date.now().toString(), ...validatedProductData };
+  console.log({ validatedProductData: newProduct.price });
   products.push(newProduct as { id: string; name: string; price: number });
   return BunxyzResponse.json(newProduct);
 };
